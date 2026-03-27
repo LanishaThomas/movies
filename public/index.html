@@ -2,51 +2,139 @@
 <html>
 <head>
   <title>Movie Recommender 🎬</title>
+
   <style>
     body {
-      font-family: Arial;
-      max-width: 800px;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 850px;
       margin: auto;
       padding: 20px;
     }
-    input, button {
-      margin: 5px;
-      padding: 8px;
+
+    h1 {
+      text-align: center;
+      animation: fadeIn 1s ease;
     }
-    .movie {
-      border: 1px solid #ddd;
+
+    .card {
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      padding: 20px;
+      border-radius: 15px;
+      margin-bottom: 20px;
+      animation: slideUp 0.6s ease;
+    }
+
+    input, select {
       padding: 10px;
+      margin: 5px;
+      border-radius: 8px;
+      border: none;
+    }
+
+    button {
+      padding: 10px 15px;
+      border-radius: 8px;
+      border: none;
+      background: linear-gradient(45deg, #ff6a00, #ee0979);
+      color: white;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+    }
+
+    .movie {
+      background: linear-gradient(135deg, #43cea2, #185a9d);
+      padding: 15px;
       margin: 10px 0;
+      border-radius: 12px;
+      animation: fadeIn 0.5s ease;
+      transition: 0.3s;
+    }
+
+    .movie:hover {
+      transform: translateY(-5px);
+    }
+
+    .delete-btn {
+      margin-top: 10px;
+      background: linear-gradient(45deg, #ff416c, #ff4b2b);
+    }
+
+    @keyframes fadeIn {
+      from {opacity:0;}
+      to {opacity:1;}
+    }
+
+    @keyframes slideUp {
+      from {transform: translateY(20px); opacity:0;}
+      to {transform: translateY(0); opacity:1;}
     }
   </style>
 </head>
+
 <body>
 
-<h1>🎬 Movie Recommendation System</h1>
+<div class="container">
 
-<h3>Add Movie</h3>
-<input id="title" placeholder="Title">
-<input id="genre" placeholder="Genre">
-<input id="rating" type="number" placeholder="Rating">
-<select id="recommended">
-  <option value="true">Recommended</option>
-  <option value="false">Not Recommended</option>
-</select>
-<button onclick="addMovie()">Add</button>
+  <h1>🎬 Movie Recommendation System</h1>
 
-<h3>Filter by Rating</h3>
-<input id="filterRating" type="number">
-<button onclick="getMovies()">Search</button>
+  <!-- Add Movie -->
+  <div class="card">
+    <h3>Add Movie</h3>
+    <input id="title" placeholder="Title">
+    <input id="genre" placeholder="Genre">
+    <input id="rating" type="number" placeholder="Rating">
+    <select id="recommended">
+      <option value="true">Recommended</option>
+      <option value="false">Not Recommended</option>
+    </select>
+    <button onclick="addMovie()">Add Movie</button>
+  </div>
 
-<h3>Movies</h3>
-<div id="movies"></div>
+  <!-- Filter -->
+  <div class="card">
+    <h3>Filter by Rating</h3>
+
+    <select id="operator">
+      <option value="eq">= Equal</option>
+      <option value="gt">> Greater Than</option>
+      <option value="lt">< Less Than</option>
+    </select>
+
+    <input id="filterRating" type="number" placeholder="Enter rating">
+
+    <button onclick="getMovies()">Apply Filter</button>
+  </div>
+
+  <!-- Movies -->
+  <div class="card">
+    <h3>Movies</h3>
+    <div id="movies"></div>
+  </div>
+
+</div>
 
 <script>
 async function getMovies() {
   const rating = document.getElementById("filterRating").value;
+  const operator = document.getElementById("operator").value;
+
   let url = "/api/movies";
 
-  if (rating) url += `?rating=${rating}`;
+  if (rating) {
+    url += `?rating=${rating}&operator=${operator}`;
+  }
 
   const res = await fetch(url);
   const data = await res.json();
@@ -58,10 +146,10 @@ async function getMovies() {
     container.innerHTML += `
       <div class="movie">
         <b>${movie.title}</b> (${movie.genre})<br>
-        Rating: ${movie.rating}<br>
-        Recommended: ${movie.recommended}
+        ⭐ Rating: ${movie.rating}<br>
+        ✅ Recommended: ${movie.recommended}
         <br>
-        <button onclick="deleteMovie('${movie.id}')">Delete</button>
+        <button class="delete-btn" onclick="deleteMovie('${movie.id}')">Delete</button>
       </div>
     `;
   });

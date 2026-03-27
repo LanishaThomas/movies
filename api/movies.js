@@ -8,12 +8,27 @@ function send(res, status, data) {
 export default function handler(req, res) {
   const { method, query } = req;
 
-  // GET /api/movies?rating=4
+  // =========================
+  // GET /api/movies?rating=4&operator=gt
+  // =========================
   if (method === "GET") {
     let result = movies;
 
-    if (query.rating) {
-      result = result.filter(m => m.rating == query.rating);
+    const { rating, operator } = query;
+
+    if (rating !== undefined) {
+      const numRating = Number(rating);
+
+      if (operator === "gt") {
+        result = result.filter(m => m.rating > numRating);
+      } 
+      else if (operator === "lt") {
+        result = result.filter(m => m.rating < numRating);
+      } 
+      else {
+        // default = equal
+        result = result.filter(m => m.rating == numRating);
+      }
     }
 
     return send(res, 200, {
@@ -23,7 +38,9 @@ export default function handler(req, res) {
     });
   }
 
+  // =========================
   // POST /api/movies
+  // =========================
   if (method === "POST") {
     const { title, genre, rating, recommended } = req.body;
 
@@ -38,7 +55,7 @@ export default function handler(req, res) {
       id: Date.now().toString(),
       title,
       genre,
-      rating,
+      rating: Number(rating), // ensure number
       recommended,
       createdAt: new Date()
     };
@@ -51,7 +68,9 @@ export default function handler(req, res) {
     });
   }
 
+  // =========================
   // PATCH /api/movies?id=123
+  // =========================
   if (method === "PATCH") {
     const { id } = query;
     const movie = movies.find(m => m.id === id);
@@ -67,7 +86,7 @@ export default function handler(req, res) {
 
     if (title !== undefined) movie.title = title;
     if (genre !== undefined) movie.genre = genre;
-    if (rating !== undefined) movie.rating = rating;
+    if (rating !== undefined) movie.rating = Number(rating);
     if (recommended !== undefined) movie.recommended = recommended;
 
     return send(res, 200, {
@@ -76,7 +95,9 @@ export default function handler(req, res) {
     });
   }
 
+  // =========================
   // DELETE /api/movies?id=123
+  // =========================
   if (method === "DELETE") {
     const { id } = query;
     const index = movies.findIndex(m => m.id === id);
