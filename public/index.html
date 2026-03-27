@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Movie Recommender 🎬</title>
+  <style>
+    body {
+      font-family: Arial;
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+    }
+    input, button {
+      margin: 5px;
+      padding: 8px;
+    }
+    .movie {
+      border: 1px solid #ddd;
+      padding: 10px;
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+
+<h1>🎬 Movie Recommendation System</h1>
+
+<h3>Add Movie</h3>
+<input id="title" placeholder="Title">
+<input id="genre" placeholder="Genre">
+<input id="rating" type="number" placeholder="Rating">
+<select id="recommended">
+  <option value="true">Recommended</option>
+  <option value="false">Not Recommended</option>
+</select>
+<button onclick="addMovie()">Add</button>
+
+<h3>Filter by Rating</h3>
+<input id="filterRating" type="number">
+<button onclick="getMovies()">Search</button>
+
+<h3>Movies</h3>
+<div id="movies"></div>
+
+<script>
+async function getMovies() {
+  const rating = document.getElementById("filterRating").value;
+  let url = "/api/movies";
+
+  if (rating) url += `?rating=${rating}`;
+
+  const res = await fetch(url);
+  const data = await res.json();
+
+  const container = document.getElementById("movies");
+  container.innerHTML = "";
+
+  data.data.forEach(movie => {
+    container.innerHTML += `
+      <div class="movie">
+        <b>${movie.title}</b> (${movie.genre})<br>
+        Rating: ${movie.rating}<br>
+        Recommended: ${movie.recommended}
+        <br>
+        <button onclick="deleteMovie('${movie.id}')">Delete</button>
+      </div>
+    `;
+  });
+}
+
+async function addMovie() {
+  const body = {
+    title: document.getElementById("title").value,
+    genre: document.getElementById("genre").value,
+    rating: Number(document.getElementById("rating").value),
+    recommended: document.getElementById("recommended").value === "true"
+  };
+
+  await fetch("/api/movies", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body)
+  });
+
+  getMovies();
+}
+
+async function deleteMovie(id) {
+  await fetch(`/api/movies?id=${id}`, {
+    method: "DELETE"
+  });
+
+  getMovies();
+}
+
+getMovies();
+</script>
+
+</body>
+</html>
